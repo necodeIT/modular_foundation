@@ -2,6 +2,9 @@
 
 A pragmatic, testable, and highly modular architecture for Flutter apps. It formalizes clean boundaries between **Presentation**, **Domain**, **Infra**, and **Utils**, with strong DI conventions and repository‑driven UI state.
 
+> [!IMPORTANT]  
+> This is a **work in progress**. The architecture is stable, but the API and documentation are still evolving and subject to change. Feedback and contributions are welcome!
+
 ## Motivation
 
 Unclear ownership of IO vs UI, repositories doing too much, infra types leaking into presentation, and cross‑module coupling that made refactors painful. The Modular Foundation draws a hard line between concerns so features stay swappable and tests stay fast. It’s inspired by ideas popularized in **flutter_modular** (composition by modules, explicit routing/DI boundaries), adapted to emphasize **contracts-first domain design** and **repository‑driven state**.
