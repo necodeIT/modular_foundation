@@ -31,32 +31,32 @@ abstract class RepoState<T> implements Model {
       this is RepoDataState<T> ? (this as RepoDataState<T>).value : null;
 
   /// Returns the data contained in this state.
-  /// Throws a [StateError] if [hasData] is false.
+  /// Throws a [NoRepoDataError] if [hasData] is false.
   T get requireData {
     if (this is RepoDataState<T>) {
       return (this as RepoDataState<T>).value;
     } else {
-      throw StateError('No data available in RepoState.');
+      throw NoRepoDataError(this);
     }
   }
 
   /// Returns this state as an error state containing the error information.
-  /// Throws a [StateError] if [hasError] is false.
+  /// Throws a [RepoStateError] if [hasError] is false.
   RepoErrorState<T> get asError {
     if (this is RepoErrorState<T>) {
       return this as RepoErrorState<T>;
     } else {
-      throw StateError('No error available in RepoState.');
+      throw RepoStateError(this, 'No error available in RepoState.');
     }
   }
 
   /// Returns this state as a loading state containg information for how long it has been loading.
-  /// Throws a [StateError] if [isLoading] is false.
+  /// Throws a [RepoStateError] if [isLoading] is false.
   RepoLoadingState<T> get asLoading {
     if (this is RepoLoadingState<T>) {
       return this as RepoLoadingState<T>;
     } else {
-      throw StateError('Not a loading state in RepoState.');
+      throw RepoStateError(this, 'Not a loading state in RepoState.');
     }
   }
 }
@@ -68,6 +68,11 @@ class RepoDataState<T> extends RepoState<T> {
 
   /// Creates a [RepoDataState] with the given [value].
   const RepoDataState(this.value);
+
+  @override
+  String toString() {
+    return 'RepoDataState(value: $value)';
+  }
 }
 
 /// Represents a loading state in a [Repo] indicating that data is being fetched.
@@ -80,6 +85,11 @@ class RepoLoadingState<T> extends RepoState<T> {
 
   /// The duration since this loading state was created.
   Duration get elapsed => DateTime.now().difference(timeStamp);
+
+  @override
+  String toString() {
+    return 'RepoLoadingState(timeStamp: $timeStamp)';
+  }
 }
 
 /// Represents an error state in a [Repo].
@@ -92,4 +102,20 @@ class RepoErrorState<T> extends RepoState<T> {
 
   /// Creates a [RepoErrorState] with the given [error] and optional [stackTrace].
   const RepoErrorState(this.error, [this.stackTrace]);
+
+  @override
+  String toString() {
+    return 'RepoErrorState(error: $error, stackTrace: $stackTrace)';
+  }
+}
+
+class RepoStateError extends StateError {
+  final RepoState state;
+
+  RepoStateError(this.state, super.message);
+}
+
+class NoRepoDataError extends RepoStateError {
+  NoRepoDataError(RepoState state)
+    : super(state, 'No data available in RepoState. Current state: $state');
 }

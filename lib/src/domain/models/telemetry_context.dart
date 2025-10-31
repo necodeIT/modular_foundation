@@ -1,5 +1,7 @@
-import 'package:meta/meta.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:modular_foundation/modular_foundation.dart';
+
+part 'telemetry_context.freezed.dart';
 
 /// Represents a telemetry span’s execution context.
 ///
@@ -35,25 +37,21 @@ import 'package:modular_foundation/modular_foundation.dart';
 /// Each context tracks the [ownerType] of the service that created it.
 /// This prevents nested spans from different telemetry backends from
 /// accidentally attaching to each other.
-@immutable
-class TelemetryContext<T> implements Model {
+@freezed
+abstract class TelemetryContext<T> with _$TelemetryContext<T> implements Model {
   /// Creates a new [TelemetryContext].
-  const TelemetryContext({
-    required this.span,
-    required this.ownerType,
-    this.attributes = const {},
-  });
+  const factory TelemetryContext({
+    /// The backend-specific span object (e.g., a Sentry or OTel span).
+    required T span,
 
-  /// The backend-specific span object (e.g., a Sentry or OTel span).
-  final T span;
+    /// Arbitrary metadata or contextual data for this span.
+    ///
+    /// Implementations may store trace IDs, sampling info, etc.
+    required Map<Symbol, dynamic> attributes,
 
-  /// Arbitrary metadata or contextual data for this span.
-  ///
-  /// Implementations may store trace IDs, sampling info, etc.
-  final Map<Symbol, dynamic> attributes;
-
-  /// The type of the [TelemetryService] that owns this context.
-  ///
-  /// Used to ensure type-safe context lookups in [TelemetryZoneMixin].
-  final Type ownerType;
+    /// The type of the [TelemetryService] that owns this context.
+    ///
+    /// Used to ensure type-safe context lookups in [TelemetryZoneMixin].
+    required Type ownerType,
+  }) = _TelemetryContext<T>;
 }
