@@ -184,6 +184,7 @@ mixin FuzzyFindQueryMixin<T> on Repo<List<T>>, QueryMixin<List<T>> {
           fuzzySelectors,
           fuzzySearchConfig,
         );
+
         return r.map(extractResult).toList();
       },
       cacheKey: query.toLowerCase(),

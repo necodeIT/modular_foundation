@@ -1,0 +1,338 @@
+import 'dart:async';
+
+import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
+import 'package:modular_foundation/modular_foundation.dart';
+import 'package:test/test.dart';
+
+void main() {
+  final di = GetIt.instance;
+  late _TestTelemetryService telemetry;
+  final repos = <Repo<List<_TestItem>>>[];
+
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    // ignore: avoid_print
+    print(record);
+  });
+
+  _TestQueryRepo createRepo({
+    bool? invalidateOnNewData,
+    bool? invalidateOnError,
+    bool? invalidateOnLoading,
+    bool? cacheNullResults,
+  }) {
+    final repo = _TestQueryRepo(
+      invalidateOnNewData: invalidateOnNewData,
+      invalidateOnError: invalidateOnError,
+      invalidateOnLoading: invalidateOnLoading,
+      cacheNullResults: cacheNullResults,
+    );
+    repos.add(repo);
+    return repo;
+  }
+
+  _UninitializedQueryRepo createUninitializedRepo() {
+    final repo = _UninitializedQueryRepo();
+    repos.add(repo);
+    return repo;
+  }
+
+  setUp(() async {
+    await di.reset();
+    telemetry = _TestTelemetryService();
+    di.registerSingleton<TelemetryService>(telemetry);
+  });
+
+  tearDown(() async {
+    for (final repo in repos) {
+      await repo.dispose();
+    }
+    repos.clear();
+    await di.reset();
+  });
+
+  group('QueryMixin', () {
+    test('returns null when no data is available', () async {
+      final repo = createRepo();
+
+      final result = await repo.query<int>(
+        'countItems',
+        (data) => data.length,
+        cacheKey: 'count',
+      );
+
+      expect(result, isNull);
+      expect(telemetry.runSpanCalls, 0);
+    });
+
+    test('caches results and invalidates when data changes', () async {
+      final repo = createRepo()..setItems(_seedItems);
+      var computeCalls = 0;
+
+      FutureOr<int> compute(List<_TestItem> items) {
+        computeCalls++;
+        return items.length;
+      }
+
+      final first = await repo.query<int>(
+        'countItems',
+        compute,
+        cacheKey: 'count',
+      );
+
+      final second = await repo.query<int>(
+        'countItems',
+        compute,
+        cacheKey: 'count',
+      );
+
+      repo.setItems([
+        ..._seedItems,
+        const _TestItem(
+          id: '3',
+          name: 'Golden Pear',
+          description: 'A ripe pear with golden skin.',
+        ),
+      ]);
+
+      final third = await repo.query<int>(
+        'countItems',
+        compute,
+        cacheKey: 'count',
+      );
+
+      expect(first, equals(2));
+      expect(second, equals(2));
+      expect(third, equals(3));
+      expect(computeCalls, 2);
+      expect(telemetry.runSpanCalls, 2);
+    });
+
+    test('caches null results when enabled', () async {
+      final repo = createRepo()..setItems(_seedItems);
+      var computeCalls = 0;
+
+      FutureOr<_TestItem?> compute(List<_TestItem> items) {
+        computeCalls++;
+        return null;
+      }
+
+      final first = await repo.query<_TestItem?>(
+        'findMissing',
+        compute,
+        cacheKey: 'missing',
+      );
+
+      final second = await repo.query<_TestItem?>(
+        'findMissing',
+        compute,
+        cacheKey: 'missing',
+      );
+
+      expect(first, isNull);
+      expect(second, isNull);
+      expect(computeCalls, 1);
+      expect(telemetry.runSpanCalls, 1);
+    });
+
+    test('skips caching null results when disabled', () async {
+      final repo = createRepo(cacheNullResults: false)..setItems(_seedItems);
+      var computeCalls = 0;
+
+      FutureOr<_TestItem?> compute(List<_TestItem> items) {
+        computeCalls++;
+        return null;
+      }
+
+      await repo.query<_TestItem?>('findMissing', compute, cacheKey: 'missing');
+
+      await repo.query<_TestItem?>('findMissing', compute, cacheKey: 'missing');
+
+      expect(computeCalls, 2);
+      expect(telemetry.runSpanCalls, 2);
+    });
+
+    test('asserts when installMemoryCacheHooks was not called', () async {
+      final repo = createUninitializedRepo()..setItems(_seedItems);
+
+      expect(
+        () => repo.query<int>('countItems', (items) => items.length),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+  });
+
+  group('QueryByIdMixin', () {
+    test('returns matching item and caches the result', () async {
+      final repo = createRepo()..setItems(_seedItems);
+
+      final first = await repo.getById('1');
+      final second = await repo.getById('1');
+
+      expect(first, isNotNull);
+      expect(first?.name, equals('Red Apple'));
+      expect(second, same(first));
+      expect(telemetry.runSpanCalls, 1);
+      expect(telemetry.runSpanNames, contains('queryById'));
+    });
+
+    test('returns null for missing item and caches the lookup', () async {
+      final repo = createRepo()..setItems(_seedItems);
+
+      final first = await repo.getById('missing');
+      final second = await repo.getById('missing');
+
+      expect(first, isNull);
+      expect(second, isNull);
+      expect(telemetry.runSpanCalls, 1);
+      expect(telemetry.runSpanNames, contains('queryById'));
+    });
+  });
+
+  group('FuzzyFindQueryMixin', () {
+    test('performs fuzzy search and caches by normalized key', () async {
+      final repo = createRepo()..setItems(_seedItems);
+
+      final first = await repo.fuzzyFind('rd apple');
+
+      final second = await repo.fuzzyFind('RD APPLE');
+
+      expect(first, hasLength(1));
+      expect(first.first.name, equals('Red Apple'));
+      expect(second, same(first));
+      expect(telemetry.runSpanCalls, 1);
+      expect(telemetry.runSpanNames, contains('fuzzyFind'));
+    });
+  });
+}
+
+class _TestQueryRepo extends Repo<List<_TestItem>>
+    with
+        RepoLifecycleMixin<List<_TestItem>>,
+        RepoLifecycleHooksMixin<List<_TestItem>>,
+        QueryMixin<List<_TestItem>>,
+        QueryByIdMixin<_TestItem, String>,
+        FuzzyFindQueryMixin<_TestItem> {
+  _TestQueryRepo({
+    bool? invalidateOnNewData,
+    bool? invalidateOnError,
+    bool? invalidateOnLoading,
+    bool? cacheNullResults,
+  }) : _invalidateOnNewData = invalidateOnNewData,
+       _invalidateOnError = invalidateOnError,
+       _invalidateOnLoading = invalidateOnLoading,
+       _cacheNullResults = cacheNullResults {
+    installMemoryCacheHooks();
+  }
+
+  final bool? _invalidateOnNewData;
+  final bool? _invalidateOnError;
+  final bool? _invalidateOnLoading;
+  final bool? _cacheNullResults;
+
+  void setItems(List<_TestItem> items) => data(items);
+
+  @override
+  bool get invalidateCacheOnNewData =>
+      _invalidateOnNewData ?? super.invalidateCacheOnNewData;
+
+  @override
+  bool get invalidateCacheOnError =>
+      _invalidateOnError ?? super.invalidateCacheOnError;
+
+  @override
+  bool get invalidateCacheOnLoading =>
+      _invalidateOnLoading ?? super.invalidateCacheOnLoading;
+
+  @override
+  bool get cacheNullResults => _cacheNullResults ?? super.cacheNullResults;
+
+  @override
+  List<String Function(_TestItem item)> get fuzzySelectors => [
+    (item) => item.name,
+    (item) => item.description,
+  ];
+
+  @override
+  String getId(_TestItem item) => item.id;
+}
+
+class _UninitializedQueryRepo extends Repo<List<_TestItem>>
+    with
+        RepoLifecycleMixin<List<_TestItem>>,
+        RepoLifecycleHooksMixin<List<_TestItem>>,
+        QueryMixin<List<_TestItem>>,
+        QueryByIdMixin<_TestItem, String> {
+  void setItems(List<_TestItem> items) => data(items);
+
+  @override
+  String getId(_TestItem item) => item.id;
+}
+
+class _TestTelemetryService extends TelemetryService {
+  int runSpanCalls = 0;
+  final List<String> runSpanNames = [];
+  final Map<String, String> spanAttributes = {};
+
+  @override
+  Future<void> recordEvent(
+    String name, {
+    Map<String, String>? attributes,
+  }) async {}
+
+  @override
+  Future<void> recordException(
+    Object error, [
+    StackTrace? stackTrace,
+    Map<String, String>? attributes,
+  ]) async {}
+
+  @override
+  Future<T> runSpan<T>(
+    String name,
+    FutureOr<T> Function() callback, {
+    Map<String, String>? attributes,
+  }) async {
+    runSpanCalls++;
+    runSpanNames.add(name);
+    if (attributes != null) {
+      spanAttributes.addAll(attributes);
+    }
+
+    return await callback();
+  }
+
+  @override
+  void addSpanAttribute(String key, String value) {
+    spanAttributes[key] = value;
+  }
+
+  @override
+  FutureOr<void> dispose() {}
+}
+
+class _TestItem {
+  const _TestItem({
+    required this.id,
+    required this.name,
+    required this.description,
+  });
+
+  final String id;
+  final String name;
+  final String description;
+}
+
+final _seedItems = <_TestItem>[
+  const _TestItem(
+    id: '1',
+    name: 'Red Apple',
+    description: 'A crisp red apple from the orchard.',
+  ),
+  const _TestItem(
+    id: '2',
+    name: 'Blue Berry',
+    description: 'Fresh blueberries picked at dawn.',
+  ),
+];
