@@ -20,7 +20,8 @@ dev_dependencies:
   custom_lint: ^0.8.1
   freezed: ^3.2.3
   freezed_lint: ^0.0.12
-  lints: ^6.0.0
   grumpy_lints:
-    path: ../grumpy_lints
+    git:
+      url: https://github.com/necodeIT/grumpy_lints.git
+  lints: ^6.0.0
   test: ^1.25.6
