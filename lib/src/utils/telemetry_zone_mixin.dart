@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:meta/meta.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// A reusable mixin that provides zone-based span management for telemetry services.
 ///

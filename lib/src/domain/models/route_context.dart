@@ -1,5 +1,5 @@
 import 'package:meta/meta.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// Contextual information about the current routing state.
 @immutable

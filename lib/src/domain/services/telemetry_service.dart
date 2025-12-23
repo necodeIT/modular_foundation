@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// A service interface for recording system-level telemetry, traces, and exceptions.
 ///

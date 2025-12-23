@@ -5,11 +5,11 @@ export 'presentation/presentation.dart';
 import 'package:get_it/get_it.dart' hide Disposable;
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 import 'dart:async';
 
-import 'package:modular_foundation/src/infra/infra.dart';
+import 'package:grumpy/src/infra/infra.dart';
 
 /// A modular unit of functionality within an application.
 abstract class Module<RouteType, Config extends Object>
@@ -136,7 +136,7 @@ typedef Builder<T, Config extends Object> =
 /// A function that resolves an instance of type [T].
 typedef Resolver = T Function<T extends Object>();
 
-/// The root module of any Modular Foundation application.
+/// The root module of any Grumpy application.
 ///
 /// As the root module, it is responsible for providing the application-wide
 /// configuration ([Config]) as well as setting up core services like telemetry and analytics.

@@ -1,4 +1,4 @@
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// A service interface for recording product and user analytics events.
 ///

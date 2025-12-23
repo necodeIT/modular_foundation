@@ -1,7 +1,7 @@
-name: modular_foundation
+name: grumpy
 description: A modular, declarative, and codegen-first architecture for scalable Flutter applications.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/necodeIT/grumpy
 environment:
   sdk: ^3.8.1
 
@@ -21,6 +21,6 @@ dev_dependencies:
   freezed: ^3.2.3
   freezed_lint: ^0.0.12
   lints: ^6.0.0
-  modular_foundation_lints:
-    path: ../modular_foundation_lints
+  grumpy_lints:
+    path: ../grumpy_lints
   test: ^1.25.6

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 // this is the base class for views.
 // ignore: views_must_extend_view, views_must_have_view_suffix

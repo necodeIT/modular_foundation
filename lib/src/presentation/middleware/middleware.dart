@@ -1,7 +1,7 @@
 // this is the base class for guards.
 // ignore: guards_must_extend_guard
 import 'package:meta/meta.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// {@template middleware}
 /// Middleware that can intercept and modify routing behavior.

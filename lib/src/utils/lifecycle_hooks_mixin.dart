@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// Provides lifecycle hooks for classes that mix in [LifecycleMixin].
 mixin LifecycleHooksMixin on LifecycleMixin, LogMixin {

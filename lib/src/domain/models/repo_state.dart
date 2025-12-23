@@ -1,4 +1,4 @@
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// Represents the data state of a [Repo].
 abstract class RepoState<T> extends Model {

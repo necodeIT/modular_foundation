@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart' hide Disposable;
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 import 'package:rxdart/rxdart.dart';
 
 // this is the base class for repositories.

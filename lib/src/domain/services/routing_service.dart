@@ -1,4 +1,4 @@
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// A service responsible for managing application routing.
 /// Note: This router is only responsible for marking routes as active and

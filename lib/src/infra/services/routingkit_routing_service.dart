@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:routingkit/routingkit.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// [RoutingService] impementation that uses RoutingKit for route parsing and matching.
 class RoutingKitRoutingService<T, Config extends Object>

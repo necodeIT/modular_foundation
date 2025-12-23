@@ -1,7 +1,7 @@
 // this is not production code; it's just for test linting
 // ignore_for_file: empty_constructor_bodies
 
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 void stub() {}
 

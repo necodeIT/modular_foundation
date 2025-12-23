@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:modular_foundation/annotations.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/annotations.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// A mixin that provides mutation capabilities to a [Repo].
 mixin MutationMixins<T> on Repo<T>, RepoLifecycleHooksMixin<T> {

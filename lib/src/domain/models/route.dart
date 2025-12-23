@@ -1,5 +1,5 @@
 import 'package:meta/meta.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// A node in the routing tree of a [Module]-based application.
 ///

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/grumpy.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -126,7 +126,6 @@ void main() {
       di = GetIt.instance;
       await di.reset(dispose: false);
       root = _RootTestModule(const _Cfg('cfg'));
-      await root.initialize();
       routing = di.get<RoutingService<String, _Cfg>>();
     });
 
@@ -281,7 +280,9 @@ class _FeatureModule extends Module<String, _Cfg> {
 }
 
 class _RootTestModule extends RootModule<String, _Cfg> {
-  _RootTestModule(super.cfg) : featureModule = _FeatureModule();
+  _RootTestModule(super.cfg) : featureModule = _FeatureModule() {
+    initialize();
+  }
 
   final _FeatureModule featureModule;
 

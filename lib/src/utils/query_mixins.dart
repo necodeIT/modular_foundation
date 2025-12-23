@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 import 'package:memory_cache/memory_cache.dart';
 import 'package:meta/meta.dart';
-import 'package:modular_foundation/annotations.dart';
-import 'package:modular_foundation/modular_foundation.dart';
+import 'package:grumpy/annotations.dart';
+import 'package:grumpy/grumpy.dart';
 
 /// Adds query execution with telemetry and in-memory caching to a [Repo].
 mixin QueryMixin<T> on Repo<T>, RepoLifecycleHooksMixin<T> {
