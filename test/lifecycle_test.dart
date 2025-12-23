@@ -1,7 +1,15 @@
+import 'package:logging/logging.dart';
 import 'package:modular_foundation/modular_foundation.dart';
 import 'package:test/test.dart';
 
 void main() {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    // this is not production code; it's just for test logging
+    // ignore: avoid_print
+    print(record);
+  });
+
   group('LifecycleMixin', () {
     test('tracks lifecycle invocations and prevents double dispose', () async {
       final target = _LifecycleTarget();

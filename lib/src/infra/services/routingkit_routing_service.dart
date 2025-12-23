@@ -19,7 +19,7 @@ class RoutingKitRoutingService<T, Config extends Object>
 
   /// Whether route matching should be case-sensitive.
   final bool caseSensitive;
-  final Map<String, List<Module<T, Config>>> _moduleCache = {};
+  final Map<String, Set<Module<T, Config>>> _moduleCache = {};
 
   /// [RoutingService] impementation that uses RoutingKit for route parsing and matching.
   RoutingKitRoutingService(this.rootModule, {this.caseSensitive = false}) {
@@ -86,16 +86,16 @@ class RoutingKitRoutingService<T, Config extends Object>
   /// Returns a list of modules that need to be activated for the given [path].
   ///
   /// This method uses a cache to optimize repeated lookups for the same path.
-  List<Module<T, Config>> getDependencies(String path) {
-    if (path.isEmpty) return [];
+  Set<Module<T, Config>> getDependencies(String path) {
+    if (path.isEmpty) return {};
 
-    if (path == '/') return [];
+    if (path == '/') return {};
 
     if (_moduleCache.containsKey(path)) {
       return _moduleCache[path]!;
     }
 
-    final List<Module<T, Config>> modules = [];
+    final Set<Module<T, Config>> modules = {};
     final List<String> pathNodes = path.split('/');
 
     String currentPath = '';
@@ -116,7 +116,7 @@ class RoutingKitRoutingService<T, Config extends Object>
   Future<void> navigate(
     String path, {
     bool skipPreview = false,
-    required Function(T) callback,
+    required void Function(T) callback,
   }) async {
     final uri = Uri.parse(path);
     final cleanPath = uri.path;
@@ -132,7 +132,17 @@ class RoutingKitRoutingService<T, Config extends Object>
       );
     }
 
-    final leaf = match.data;
+    var leaf = match.data;
+
+    if (leaf is ModuleRoute<T, Config>) {
+      leaf =
+          leaf.root ??
+          (throw ArgumentError.value(
+            path,
+            'path',
+            'Resolved ModuleRoute does not have a root LeafRoute defined!',
+          ));
+    }
 
     // check if leaf (throw if not)
     if (leaf is! LeafRoute) {

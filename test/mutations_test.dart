@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:modular_foundation/modular_foundation.dart';
 import 'package:test/test.dart';
 
@@ -9,6 +10,13 @@ void main() {
   late _TestTelemetry telemetry;
   late _TestAnalytics analytics;
   late _MutationRepo repo;
+
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    // this is not production code; it's just for test logging
+    // ignore: avoid_print
+    print(record);
+  });
 
   setUp(() async {
     await di.reset();

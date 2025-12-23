@@ -1,10 +1,18 @@
 import 'dart:async';
 
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:modular_foundation/modular_foundation.dart';
 import 'package:test/test.dart';
 
 void main() {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    // this is not production code; it's just for test logging
+    // ignore: avoid_print
+    print(record);
+  });
+
   group('Middleware', () {
     test('stores path, children, and middleware', () {
       final middleware = _CountingMiddleware();
@@ -116,21 +124,32 @@ void main() {
 
     setUp(() async {
       di = GetIt.instance;
-      await di.reset();
+      await di.reset(dispose: false);
       root = _RootTestModule(const _Cfg('cfg'));
       await root.initialize();
       routing = di.get<RoutingService<String, _Cfg>>();
     });
 
     tearDown(() async {
-      await di.reset();
+      await di.reset(dispose: false);
     });
 
     test('navigation fails when route is not a leaf', () async {
       final results = <String>[];
 
       await expectLater(
-        () => routing.navigate('/feature', callback: results.add),
+        routing.navigate('/idk/', callback: results.add),
+        throwsA(isA<ArgumentError>()),
+      );
+
+      expect(results, isEmpty);
+    });
+
+    test('navigation fails when route is a module without root', () async {
+      final results = <String>[];
+
+      await expectLater(
+        routing.navigate('/module', callback: results.add),
         throwsA(isA<ArgumentError>()),
       );
 
@@ -145,6 +164,21 @@ void main() {
       expect(results, ['preview:/feature/child', 'built:/feature/child']);
       expect(root.featureModule.activateCalls, 1);
     });
+
+    test(
+      'uses ModuleRoute root when navigating into module subroutes',
+      () async {
+        final results = <String>[];
+
+        await expectLater(
+          routing.navigate('/feature/', callback: results.add),
+          completes,
+        );
+
+        expect(results, ['preview:/feature/', 'built:/feature/']);
+        expect(root.featureModule.activateCalls, 1);
+      },
+    );
   });
 }
 
@@ -239,6 +273,10 @@ class _FeatureModule extends Module<String, _Cfg> {
   @override
   List<Route<String, _Cfg>> get routes => [
     LeafRoute<String, _Cfg>(path: 'child', view: _TestLeaf2()),
+    Route<String, _Cfg>(
+      path: 'sub',
+      children: [LeafRoute<String, _Cfg>(path: 'final', view: _TestLeaf2())],
+    ),
   ];
 }
 
@@ -249,7 +287,13 @@ class _RootTestModule extends RootModule<String, _Cfg> {
 
   @override
   List<Route<String, _Cfg>> get routes => [
-    ModuleRoute<String, _Cfg>(path: 'feature', module: featureModule),
+    ModuleRoute<String, _Cfg>(
+      path: 'feature',
+      module: featureModule,
+      root: LeafRoute<String, _Cfg>.root(_TestLeaf2()),
+    ),
+    ModuleRoute<String, _Cfg>(path: 'module', module: featureModule),
+    const Route<String, _Cfg>(path: 'idk'),
   ];
 
   @override

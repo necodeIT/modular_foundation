@@ -44,6 +44,11 @@ class LeafRoute<T, Config extends Object> extends Route<T, Config> {
     super.children,
   });
 
+  /// Creates a root [LeafRoute] with the given [view], optional [middleware] and [children].
+  /// This is a convenience constructor for defining root leaf routes in [ModuleRoute]s.
+  const LeafRoute.root(this.view, {super.middleware, super.children})
+    : super(path: '/');
+
   @override
   String toString() {
     return 'ViewRoute(path: $path, view: $view, middleware: $middleware, children: $children)';
