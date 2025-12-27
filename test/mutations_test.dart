@@ -298,6 +298,7 @@ class _MutationRepo extends Repo<int>
     with
         RepoLifecycleMixin<int>,
         RepoLifecycleHooksMixin<int>,
+        TelemetryMixin,
         MutationMixins<int> {
   _MutationRepo() {
     installMutationHooks();
@@ -328,6 +329,7 @@ class _UninitializedMutationRepo extends Repo<int>
     with
         RepoLifecycleMixin<int>,
         RepoLifecycleHooksMixin<int>,
+        TelemetryMixin,
         MutationMixins<int> {
   @override
   Future<void> activate() async {}

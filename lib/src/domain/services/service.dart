@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart' hide Disposable;
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:grumpy/grumpy.dart';
@@ -6,7 +7,7 @@ import 'package:grumpy/grumpy.dart';
 // ignore: services_must_extend_service
 /// A service is responsible for IO operations, such as making network requests
 /// or reading/writing files.
-abstract class Service with LogMixin, Disposable {
+abstract class Service with LogMixin, Disposable, TelemetryMixin {
   /// A service is responsible for IO operations, such as making network requests
   /// or reading/writing files.
   const Service();
@@ -22,4 +23,7 @@ abstract class Service with LogMixin, Disposable {
   @nonVirtual
   @override
   Level get errorLogLevel => Level.WARNING;
+
+  /// Retrieves an instance of the specified [Service] type from the service locator.
+  static S get<S extends Service>() => GetIt.instance<S>();
 }

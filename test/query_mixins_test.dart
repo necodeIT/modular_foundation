@@ -246,6 +246,7 @@ class _TestQueryRepo extends Repo<List<_TestItem>>
     with
         RepoLifecycleMixin<List<_TestItem>>,
         RepoLifecycleHooksMixin<List<_TestItem>>,
+        TelemetryMixin,
         QueryMixin<List<_TestItem>>,
         QueryByIdMixin<_TestItem, String>,
         FuzzyFindQueryMixin<_TestItem> {
@@ -299,6 +300,7 @@ class _UninitializedQueryRepo extends Repo<List<_TestItem>>
     with
         RepoLifecycleMixin<List<_TestItem>>,
         RepoLifecycleHooksMixin<List<_TestItem>>,
+        TelemetryMixin,
         QueryMixin<List<_TestItem>>,
         QueryByIdMixin<_TestItem, String> {
   void setItems(List<_TestItem> items) => data(items);

@@ -4,7 +4,7 @@ import 'package:grumpy/annotations.dart';
 import 'package:grumpy/grumpy.dart';
 
 /// A mixin that provides mutation capabilities to a [Repo].
-mixin MutationMixins<T> on Repo<T>, RepoLifecycleHooksMixin<T> {
+mixin MutationMixins<T> on Repo<T>, RepoLifecycleHooksMixin<T>, TelemetryMixin {
   bool _installed = false;
   int _stateVersion = 0;
 
@@ -59,17 +59,15 @@ mixin MutationMixins<T> on Repo<T>, RepoLifecycleHooksMixin<T> {
 
     final stateVersion = _stateVersion;
 
-    final telemetry = get<TelemetryService>();
-    final analytics = get<AnalyticsService>();
+    final analytics = Service.get<AnalyticsService>();
 
     try {
       log('Starting mutation $name');
       await analytics.trackEvent(eventName, properties: attributes);
 
-      final result = await telemetry.runSpan(name, () async {
+      final result = await trace(name, () async {
         return await _runWithRetries<T>(
           () => mutation(snapshot.requireData),
-          telemetry,
           retryPolicy,
           name,
         );
@@ -119,14 +117,13 @@ mixin MutationMixins<T> on Repo<T>, RepoLifecycleHooksMixin<T> {
     final snapshot = state;
     _applyOptimistics(optimisticPolicy);
     final stateVersion = _stateVersion;
-    final telemetry = get<TelemetryService>();
-    final analytics = get<AnalyticsService>();
+    final analytics = Service.get<AnalyticsService>();
 
     try {
       log('Starting action $name');
       await analytics.trackEvent(eventName, properties: attributes);
-      await telemetry.runSpan(name, () async {
-        await _runWithRetries(action, telemetry, retryPolicy, name);
+      await trace(name, () async {
+        await _runWithRetries(action, retryPolicy, name);
       });
       log('Completed action $name');
     } catch (e, st) {
@@ -137,13 +134,12 @@ mixin MutationMixins<T> on Repo<T>, RepoLifecycleHooksMixin<T> {
 
   Future<Ret> _runWithRetries<Ret>(
     FutureOr<Ret> Function() operation,
-    TelemetryService telemetry,
     RetryPolicy retryPolicy,
     String spanName,
   ) async {
     for (var i = 0; i < retryPolicy.maxAttempts; i++) {
       try {
-        return await telemetry.runSpan('try_$i', () async => operation());
+        return await trace('try_$i', () async => operation());
       } catch (e) {
         if (i == retryPolicy.maxAttempts - 1) {
           log(

@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart' hide Disposable;
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:grumpy/grumpy.dart';
@@ -6,7 +7,7 @@ import 'package:grumpy/grumpy.dart';
 // ignore: datasources_must_extend_datasource
 /// A datasource is responsible for providing data from a specific source,
 /// such as a database, API, or local storage.
-abstract class Datasource with LogMixin, Disposable {
+abstract class Datasource with LogMixin, Disposable, TelemetryMixin {
   /// A datasource is responsible for providing data from a specific source,
   /// such as a database, API, or local storage.
   const Datasource();
@@ -22,4 +23,7 @@ abstract class Datasource with LogMixin, Disposable {
   @nonVirtual
   @override
   Level get errorLogLevel => Level.WARNING;
+
+  /// Retrieves an instance of the specified [Datasource] type from the service locator.
+  static D get<D extends Datasource>() => GetIt.instance<D>();
 }

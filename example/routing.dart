@@ -64,7 +64,7 @@ Future<void> main() async {
     print(record);
   });
 
-  final rootModule = _RootModule(_Config());
+  _RootModule(_Config());
 
   final router = GetIt.I<RoutingService<String, _Config>>();
 

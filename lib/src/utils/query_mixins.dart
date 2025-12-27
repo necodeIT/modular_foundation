@@ -7,7 +7,7 @@ import 'package:grumpy/annotations.dart';
 import 'package:grumpy/grumpy.dart';
 
 /// Adds query execution with telemetry and in-memory caching to a [Repo].
-mixin QueryMixin<T> on Repo<T>, RepoLifecycleHooksMixin<T> {
+mixin QueryMixin<T> on Repo<T>, RepoLifecycleHooksMixin<T>, TelemetryMixin {
   bool _installed = false;
 
   /// Monotonic counter that increments whenever the repo publishes new data.
@@ -113,7 +113,7 @@ mixin QueryMixin<T> on Repo<T>, RepoLifecycleHooksMixin<T> {
       );
     }
 
-    final analytics = get<AnalyticsService>();
+    final analytics = Service.get<AnalyticsService>();
     if (analyticsAction != null) {
       await analytics.trackEvent(
         analyticsAction,
@@ -139,11 +139,9 @@ mixin QueryMixin<T> on Repo<T>, RepoLifecycleHooksMixin<T> {
       }
     }
 
-    final telemetry = get<TelemetryService>();
-
     QueryResult? result;
     try {
-      result = await telemetry.runSpan(
+      result = await trace(
         name,
         () => query(state.requireData),
         attributes: telemetryAttributes,

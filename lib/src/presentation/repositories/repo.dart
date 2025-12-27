@@ -20,10 +20,6 @@ abstract class Repo<T>
     onDisposed(_stream.close);
   }
 
-  /// Shorthand for [GetIt.get].
-  @nonVirtual
-  Clazz get<Clazz extends Object>() => GetIt.I<Clazz>();
-
   @nonVirtual
   @override
   String get group => 'Repo';
@@ -56,4 +52,7 @@ abstract class Repo<T>
   @nonVirtual
   @override
   Level get errorLogLevel => Level.SEVERE;
+
+  /// Retrieves an instance of the specified [Repo] type from the service locator.
+  static Future<R> get<R extends Repo>() => GetIt.instance.getAsync<R>();
 }
