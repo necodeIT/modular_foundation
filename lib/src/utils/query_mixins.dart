@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
+import 'package:grumpy_annotations/grumpy_annotations.dart';
 import 'package:memory_cache/memory_cache.dart';
 import 'package:meta/meta.dart';
-import 'package:grumpy/annotations.dart';
 import 'package:grumpy/grumpy.dart';
 
 /// Adds query execution with telemetry and in-memory caching to a [Repo].

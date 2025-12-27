@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:get_it/get_it.dart';
+import 'package:grumpy_annotations/grumpy_annotations.dart';
 import 'package:meta/meta.dart';
-import 'package:grumpy/annotations.dart';
 import 'package:grumpy/grumpy.dart';
 
 /// A mixin that provides functionality to watch and use multiple [Repo] instances.
